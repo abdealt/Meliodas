@@ -6,7 +6,7 @@ import (
 
 func main() {
 	// Appel de la fonction exportée ReadFileContent
-	components.ReadCSVFileContent()
+	components.ReadCSVFileContentAndExtracter()
 	// Appel de la fonction de création du log
 	components.LogWriter()
 }

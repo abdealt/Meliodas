@@ -11,17 +11,17 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// Exportation de variables
+// Déclaration des variables
 var FilePath string
 var ExtractFilePath string
 var CompleteExtractFileName string
 var CityINSEE string
 var DepartID string
+var ComptTotal int
+var ComptElement int
 
-// ReadCSVFileContent charge et lit le fichier CSV spécifié, puis compare la 9e colonne avec CITY_INSEE
-// et exporte les lignes correspondantes dans un nouveau fichier CSV
-func ReadCSVFileContent() {
-	// On initialise le temps
+func ReadCSVFileContentAndExtracter() {
+	// On initialise le temps qui servira plutard pour l'horodatage du fichier exporté
 	now := time.Now()
 
 	// Charger les variables d'environnement à partir du fichier .env
@@ -31,7 +31,7 @@ func ReadCSVFileContent() {
 		return
 	}
 
-	// Récupérer le chemin du fichier CSV depuis les variables d'environnement
+	// Récupérer le chemin du fichier CSV (SOURCE) depuis les variables d'environnement
 	FilePath = os.Getenv("SOURCE_FILE")
 	if FilePath == "" {
 		fmt.Printf("Aucun chemin de fichier fourni dans le fichier de configuration .env\n")
@@ -59,19 +59,21 @@ func ReadCSVFileContent() {
 		fmt.Printf("Erreur lors de l'ouverture du fichier : %v\n", err)
 		return
 	}
+	// On s'assur de sa fermeture a la fin de la fonction
 	defer csvFile.Close()
 
-	// Création d'un reader, élément qui permet la lecture d'enregistrement
+	// Création d'un reader pour lire le fichier source
 	r := csv.NewReader(csvFile)
-	r.Comma = ',' // Définit le séparateur
+	r.Comma = ',' // Définit le séparateur du fichier source
 
+	// Déterminer le nom complet du fichier d'extraction
 	if CityINSEE == "" {
 		CompleteExtractFileName = "Extraction_du_" + now.Format("2006-01-02_15-04-05") + "_PAR_DPT_" + DepartID
 	} else {
 		CompleteExtractFileName = "Extraction_du_" + now.Format("2006-01-02_15-04-05") + "_PAR_INSEE_" + CityINSEE
 	}
 
-	// Création du fichier CSV (Extraction)
+	// Créer le fichier d'extraction
 	csvExtractedFile, err := os.Create(ExtractFilePath + CompleteExtractFileName + ".csv")
 	if err != nil {
 		fmt.Printf("Erreur lors de l'ouverture du fichier : %v\n", err)
@@ -80,45 +82,44 @@ func ReadCSVFileContent() {
 	// On s'assur de sa fermeture a la fin de la fonction
 	defer csvExtractedFile.Close()
 
-	// Création d'un writer, élément qui permet d'écrire
+	// Créer un writer pour écrire dans le fichier d'extraction
 	w := csv.NewWriter(csvExtractedFile)
-	// On s'assure que ce qui doit etre ecris est ecris a la fin de la fonction
+	// Définir le séparateur du fichier d'extraction
+	w.Comma = ';'
+
+	// On s'assure que ce qui doit etre écrit est ecris a la fin de la fonction
 	defer w.Flush()
 
-	// Definition du header du nouveau csv (la ou les données seront extraites)
+	// Écrire le header dans le fichier d'extraction
 	header := []string{"x", "y", "imb_id", "num_voie", "cp_no_voie", "type_voie", "nom_voie", "batiment", "code_insee", "code_poste", "nom_com", "catg_loc_imb", "imb_etat", "pm_ref", "pm_etat", "code_l331", "geom_mod", "type_imb"}
 	w.Write(header)
 
-	// Création de la boucle de lecture dans le fichier SOURCE_FILE
+	// Lire et traiter les enregistrements du fichier source
 	for {
-		// Lire une ligne dans le fichier CSV (Source)
 		record, err := r.Read()
 
-		// On vérifie si on est a la fin du fichier
+		// Vérifier si on a atteint la fin du fichier
 		if err == io.EOF {
-			// Fin du fichier atteinte
 			break
 		}
 
-		// On verifie si une erreur est présente
+		// Gestion des erreurs de lecture
 		if err != nil {
 			fmt.Printf("Erreur lors de la lecture d'une ligne : %v\n", err)
-			continue // Passe à la ligne suivante
+			continue
 		}
 
-		// On vérifie si la ligne en cours contient suffisamment de colonnes (au moins 10)
+		// Vérifier si la ligne contient suffisamment de colonnes (au moins 10)
 		if len(record) >= 10 {
 			codeInsee := strings.TrimSpace(record[8])    // 9e colonne
-			codeDept := strings.TrimSpace(record[9][:2]) // 10e colonne, on recupère les 2 premier caractères
+			codeDept := strings.TrimSpace(record[9][:2]) // 10e colonne (2 premiers caractères)
 
+			// Vérifier si le code INSEE ou le code département correspondent
 			if codeInsee == CityINSEE || codeDept == DepartID {
-				// Ligne correspondante trouvée, on l'écrit dans le nouveau CSV
-				w.Write(record)
-				continue // Passe à la ligne suivante
-			} else {
-				continue // Passe à la ligne suivante
+				w.Write(record) // Écrire la ligne correspondante dans le fichier d'extraction
 			}
 		}
 	}
+
 	fmt.Printf("Extraction terminée, le résultat est disponible dans le fichier : %s\n", ExtractFilePath+CompleteExtractFileName+".csv")
 }
