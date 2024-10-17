@@ -11,6 +11,13 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// Exportation de variables
+var FilePath string
+var ExtractFilePath string
+var CompleteExtractFileName string
+var CityINSEE string
+var DepartID string
+
 // ReadCSVFileContent charge et lit le fichier CSV spécifié, puis compare la 9e colonne avec CITY_INSEE
 // et exporte les lignes correspondantes dans un nouveau fichier CSV
 func ReadCSVFileContent() {
@@ -25,29 +32,29 @@ func ReadCSVFileContent() {
 	}
 
 	// Récupérer le chemin du fichier CSV depuis les variables d'environnement
-	filePath := os.Getenv("SOURCE_FILE")
-	if filePath == "" {
+	FilePath = os.Getenv("SOURCE_FILE")
+	if FilePath == "" {
 		fmt.Printf("Aucun chemin de fichier fourni dans le fichier de configuration .env\n")
 		return
 	}
 
 	// Récupérer la variable CITY_INSEE ou DEPARTMENT_ID depuis le fichier .env
-	cityINSEE := os.Getenv("CITY_INSEE")
-	departID := os.Getenv("DEPARTMENT_ID")
-	if cityINSEE == "" && departID == "" {
+	CityINSEE = os.Getenv("CITY_INSEE")
+	DepartID = os.Getenv("DEPARTMENT_ID")
+	if CityINSEE == "" && DepartID == "" {
 		fmt.Printf("Aucun code INSEE (CITY_INSEE) ou Département n'est fourni dans le fichier de configuration .env\n")
 		return
 	}
 
 	// Récupérer le chemin du fichier d'extraction depuis les variables d'environnement
-	extractFilePath := os.Getenv("EXTRACT_FILE")
-	if extractFilePath == "" {
+	ExtractFilePath := os.Getenv("EXTRACT_FILE")
+	if ExtractFilePath == "" {
 		fmt.Printf("Aucun chemin pour le fichier d'extraction (EXTRACT_FILE) n'est fourni dans le fichier de configuration .env\n")
 		return
 	}
 
 	// Ouvrir le fichier CSV (Source)
-	csvFile, err := os.Open(filePath)
+	csvFile, err := os.Open(FilePath)
 	if err != nil {
 		fmt.Printf("Erreur lors de l'ouverture du fichier : %v\n", err)
 		return
@@ -58,16 +65,14 @@ func ReadCSVFileContent() {
 	r := csv.NewReader(csvFile)
 	r.Comma = ',' // Définit le séparateur
 
-	// Ici on créer une variable qui va contenir le nom de notre fichier extrait
-	var completeExtractFileName string
-	if cityINSEE == "" {
-		completeExtractFileName = "Extraction_du_" + now.Format("2006-01-02_15-04-05") + "_PAR_DPT_" + departID
+	if CityINSEE == "" {
+		CompleteExtractFileName = "Extraction_du_" + now.Format("2006-01-02_15-04-05") + "_PAR_DPT_" + DepartID
 	} else {
-		completeExtractFileName = "Extraction_du_" + now.Format("2006-01-02_15-04-05") + "_PAR_INSEE_" + cityINSEE
+		CompleteExtractFileName = "Extraction_du_" + now.Format("2006-01-02_15-04-05") + "_PAR_INSEE_" + CityINSEE
 	}
 
 	// Création du fichier CSV (Extraction)
-	csvExtractedFile, err := os.Create(extractFilePath + completeExtractFileName + ".csv")
+	csvExtractedFile, err := os.Create(ExtractFilePath + CompleteExtractFileName + ".csv")
 	if err != nil {
 		fmt.Printf("Erreur lors de l'ouverture du fichier : %v\n", err)
 		return
@@ -106,7 +111,7 @@ func ReadCSVFileContent() {
 			codeInsee := strings.TrimSpace(record[8])    // 9e colonne
 			codeDept := strings.TrimSpace(record[9][:2]) // 10e colonne, on recupère les 2 premier caractères
 
-			if codeInsee == cityINSEE || codeDept == departID {
+			if codeInsee == CityINSEE || codeDept == DepartID {
 				// Ligne correspondante trouvée, on l'écrit dans le nouveau CSV
 				w.Write(record)
 				continue // Passe à la ligne suivante
@@ -115,5 +120,5 @@ func ReadCSVFileContent() {
 			}
 		}
 	}
-	fmt.Printf("Extraction terminée, le résultat est disponible dans le fichier : %s\n", extractFilePath+completeExtractFileName+".csv")
+	fmt.Printf("Extraction terminée, le résultat est disponible dans le fichier : %s\n", ExtractFilePath+CompleteExtractFileName+".csv")
 }

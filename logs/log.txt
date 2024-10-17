@@ -1,0 +1,1 @@
+Une extraction a été effectuée le : 2024-10-17 14:56:47 | depuis le fichier source C:\Users\Utilisateur\Desktop\source\mv_immeubles_2021T4\test.csv | au nouveau fichier Extraction_du_2024-10-17_14-56-47_PAR_DPT_95.csv | les filtre actifs sont INSEE :  et DPT :95 
