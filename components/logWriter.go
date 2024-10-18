@@ -18,5 +18,5 @@ func LogWriter() {
 		return
 	}
 	defer logFile.Close()
-	logFile.WriteString(fmt.Sprintf("Une extraction a été effectuée le : %s | depuis le fichier source %s | au nouveau fichier %v | les filtres actifs sont INSEE : %v et DPT :%v \n", now.Format("2006-01-02 15:04:05"), FilePath, ExtractFilePath+CompleteExtractFileName+".csv", CityINSEE, DepartID))
+	logFile.WriteString(fmt.Sprintf("\nUne extraction a été effectuée le : %s | depuis le fichier source %s | au nouveau fichier %v | les filtres actifs sont INSEE : %v et DPT :%v \n", now.Format("2006-01-02 15:04:05"), FilePath, ExtractFilePath+CompleteExtractFileName+".csv", CityINSEE, DepartID))
 }

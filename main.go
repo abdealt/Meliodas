@@ -9,4 +9,6 @@ func main() {
 	components.ReadCSVFileContentAndExtracter()
 	// Appel de la fonction de création du log
 	components.LogWriter()
+	// Appel de la fonction statistique
+	components.GetStats()
 }

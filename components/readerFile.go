@@ -94,8 +94,12 @@ func ReadCSVFileContentAndExtracter() {
 	header := []string{"x", "y", "imb_id", "num_voie", "cp_no_voie", "type_voie", "nom_voie", "batiment", "code_insee", "code_poste", "nom_com", "catg_loc_imb", "imb_etat", "pm_ref", "pm_etat", "code_l331", "geom_mod", "type_imb"}
 	w.Write(header)
 
+	var codeDept string
+
 	// Lire et traiter les enregistrements du fichier source
 	for {
+		ComptTotal++
+		// Lire une ligne du fichier source
 		record, err := r.Read()
 
 		// Vérifier si on a atteint la fin du fichier
@@ -111,12 +115,20 @@ func ReadCSVFileContentAndExtracter() {
 
 		// Vérifier si la ligne contient suffisamment de colonnes (au moins 10)
 		if len(record) >= 10 {
-			codeInsee := strings.TrimSpace(record[8])    // 9e colonne
-			codeDept := strings.TrimSpace(record[9][:2]) // 10e colonne (2 premiers caractères)
+			codeInsee := strings.TrimSpace(record[8]) // 9e colonne
+
+			// Condition pour récupérer les 2 premier caractère (du code postal)
+			if len(record[9]) >= 2 {
+				codeDept = strings.TrimSpace(record[9][:2])
+			} else {
+				continue
+			}
 
 			// Vérifier si le code INSEE ou le code département correspondent
 			if codeInsee == CityINSEE || codeDept == DepartID {
-				w.Write(record) // Écrire la ligne correspondante dans le fichier d'extraction
+				ComptElement++
+				// Écrire la ligne correspondante dans le fichier d'extraction
+				w.Write(record)
 			}
 		}
 	}
