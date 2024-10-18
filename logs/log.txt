@@ -1,0 +1,2 @@
+Une extraction a été effectuée le : 2024-10-18 11:11:40 | depuis le fichier source C:\Users\Utilisateur\Desktop\source\mv_immeubles_2021T4\mv_immeubles_2021T4.csv | au nouveau fichier Extraction_du_2024-10-18_11-11-21_PAR_INSEE_91593, 91200.csv | les filtres actifs sont INSEE : 91593, 91200 et DPT : 
+Il y a 20223410 élements totaux dans le fichier source, sur tous ces éléments, il y'a 3868 éléments exportés

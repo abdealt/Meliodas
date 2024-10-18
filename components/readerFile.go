@@ -46,6 +46,10 @@ func ReadCSVFileContentAndExtracter() {
 		return
 	}
 
+	// Séparation des INSEE et des Département (dans le cas ou il y a plusieurs qui sont saisies)
+	DepartList := strings.Split(DepartID, ",")
+	InseeList := strings.Split(CityINSEE, ",")
+
 	// Récupérer le chemin du fichier d'extraction depuis les variables d'environnement
 	ExtractFilePath := os.Getenv("EXTRACT_FILE")
 	if ExtractFilePath == "" {
@@ -115,23 +119,33 @@ func ReadCSVFileContentAndExtracter() {
 
 		// Vérifier si la ligne contient suffisamment de colonnes (au moins 10)
 		if len(record) >= 10 {
-			codeInsee := strings.TrimSpace(record[8]) // 9e colonne
-
 			// Condition pour récupérer les 2 premier caractère (du code postal)
 			if len(record[9]) >= 2 {
 				codeDept = strings.TrimSpace(record[9][:2])
+				for _, dept := range DepartList {
+					if codeDept == strings.TrimSpace(dept) {
+						// Incrémentation de element
+						ComptElement++
+						// Ecriture de l'enregistrement trouvé
+						w.Write(record)
+						break
+					}
+				}
 			} else {
 				continue
 			}
 
-			// Vérifier si le code INSEE ou le code département correspondent
-			if codeInsee == CityINSEE || codeDept == DepartID {
-				ComptElement++
-				// Écrire la ligne correspondante dans le fichier d'extraction
-				w.Write(record)
+			codeInsee := strings.TrimSpace(record[8]) // 9e colonne
+			for _, insee := range InseeList {
+				if codeInsee == strings.TrimSpace(insee) {
+					// Incrémentation de element
+					ComptElement++
+					// Ecriture de l'enregistrement trouvé
+					w.Write(record)
+					break
+				}
 			}
 		}
 	}
-
 	fmt.Printf("Extraction terminée, le résultat est disponible dans le fichier : %s\n", ExtractFilePath+CompleteExtractFileName+".csv")
 }
