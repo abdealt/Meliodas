@@ -16,5 +16,5 @@ func GetStats() {
 	defer logFile.Close()
 
 	// Ecriture des statistique dans le Log
-	logFile.WriteString(fmt.Sprintf("Il y a %v élements totaux dans le fichier source, sur tous ces éléments, il y'a %v éléments exportés", ComptTotal, ComptElement))
+	logFile.WriteString(fmt.Sprintf("Il y a %v élements totaux dans le fichier source, sur tous ces éléments, il y'a %v éléments exportés. \n----------------------------------------------------------------------------------------------------------", ComptTotal, ComptElement))
 }
