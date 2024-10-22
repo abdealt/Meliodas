@@ -7,8 +7,7 @@ import (
 	"os"
 	"strings"
 	"time"
-
-	"github.com/joho/godotenv"
+	// "github.com/joho/godotenv"
 )
 
 // Déclaration des variables
@@ -25,11 +24,11 @@ func ReadCSVFileContentAndExtracter() {
 	now := time.Now()
 
 	// Charger les variables d'environnement à partir du fichier .env
-	err := godotenv.Load()
-	if err != nil {
-		fmt.Printf("Erreur lors du chargement du fichier .env : %v\n", err)
-		return
-	}
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	fmt.Printf("Erreur lors du chargement du fichier .env : %v\n", err)
+	// 	return
+	// }
 
 	// Récupérer le chemin du fichier CSV (SOURCE) depuis les variables d'environnement
 	FilePath = os.Getenv("SOURCE_FILE")
