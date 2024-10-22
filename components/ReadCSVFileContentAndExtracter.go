@@ -18,6 +18,7 @@ var CityINSEE string
 var DepartID string
 var ComptTotal int
 var ComptElement int
+var Stat string
 
 func ReadCSVFileContentAndExtracter() {
 	// On initialise le temps qui servira plutard pour l'horodatage du fichier exporté
@@ -59,7 +60,7 @@ func ReadCSVFileContentAndExtracter() {
 	// Ouvrir le fichier CSV (Source)
 	csvFile, err := os.Open(FilePath)
 	if err != nil {
-		fmt.Printf("Erreur lors de l'ouverture du fichier : %v\n", err)
+		fmt.Printf("Erreur survenue lors de l'ouverture du fichier Source : %v\n", err)
 		return
 	}
 	// On s'assur de sa fermeture a la fin de la fonction
@@ -79,7 +80,7 @@ func ReadCSVFileContentAndExtracter() {
 	// Créer le fichier d'extraction
 	csvExtractedFile, err := os.Create(ExtractFilePath + CompleteExtractFileName + ".csv")
 	if err != nil {
-		fmt.Printf("Erreur lors de l'ouverture du fichier : %v\n", err)
+		fmt.Printf("Erreur survenue lors de l'ouverture du fichier Extraction : %v\n", err)
 		return
 	}
 	// On s'assur de sa fermeture a la fin de la fonction
