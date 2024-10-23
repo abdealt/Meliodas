@@ -24,7 +24,7 @@ func ReadCSVFileContentAndExtracter() {
 	// On initialise le temps qui servira plutard pour l'horodatage du fichier exporté
 	now := time.Now()
 
-	// Charger les variables d'environnement à partir du fichier .env
+	// Charger les variables d'environnement à partir du fichier .env -- le chargement des variables est commenté car le fonctionnement a changé, les variable ont chargé depuis le CLI
 	// err := godotenv.Load()
 	// if err != nil {
 	// 	fmt.Printf("Erreur lors du chargement du fichier .env : %v\n", err)
