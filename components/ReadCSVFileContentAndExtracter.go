@@ -147,5 +147,8 @@ func ReadCSVFileContentAndExtracter() {
 			}
 		}
 	}
+	// Execution de la fonction Log
+	LogWriter()
 	fmt.Printf("Extraction terminée, le résultat est disponible dans le fichier : %s\n", ExtractFilePath+CompleteExtractFileName+".csv")
+
 }
