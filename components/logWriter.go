@@ -17,7 +17,7 @@ func LogWriter() {
 		fmt.Printf("Une erreur s'est produite lors de l'ouverture du fichier log: %v", err)
 		return
 	}
-
 	defer logFile.Close()
-	logFile.WriteString(fmt.Sprintf("\nUne extraction a été effectuée le : %s | depuis le fichier source %s | vers nouveau fichier %v | les filtres actifs sont INSEE : %v et DPT :%v \n Il y a %v élements totaux dans le fichier source, sur tous ces éléments, il y'a %v éléments exportés. \n----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------", now.Format("2006-01-02 15:04:05"), FilePath, ExtractFilePath+CompleteExtractFileName+".csv", CityINSEE, DepartID, ComptTotal, ComptElement))
+
+	logFile.WriteString(fmt.Sprintf("\nBLABLACAR Une extraction a été effectuée le : %s | depuis le fichier source %s | vers nouveau fichier %v | les filtres actifs sont INSEE : %v et DPT :%v \n Il y a %v élements totaux dans le fichier source, sur tous ces éléments, il y'a %v éléments exportés. \n----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------", now.Format("2006-01-02 15:04:05"), FilePath, ExtractFilePath+CompleteExtractFileName+".csv", CityINSEE, DepartID, ComptTotal, ComptElement))
 }
