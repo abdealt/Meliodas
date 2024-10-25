@@ -3,11 +3,11 @@ package components
 import "fmt"
 
 type Config struct {
-	Lst_Dprt      []string
-	Lst_Insee     []string
 	File_immeuble string
 	File_export   string
 	File_log      string
+	Lst_Dprt      []string
+	Lst_Insee     []string
 }
 
 type WorkerImmeuble struct {
