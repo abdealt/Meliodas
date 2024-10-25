@@ -1,0 +1,2 @@
+
+Une extraction a été effectuée le : 2024-10-24 17:00:01 | depuis le fichier source C:\Users\Utilisateur\Desktop\MELIODAS\meliodas\data\sources\mv_immeubles_2021T4.csv | vers nouveau fichier Extraction_du_2024-10-24_16-59-37_PAR_DPT_01.csv | les filtres actifs sont INSEE :  et DPT :01 
