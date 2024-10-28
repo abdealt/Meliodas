@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 )
 
 type Config struct {
@@ -32,6 +33,8 @@ var CptTo int
 
 // SynoReaderRunner est la fonction d'execution des traitements autour du synoptique
 func (wi *WorkerImmeuble) SuperreaderCSV() error {
+	now := time.Now()
+
 	// Ouverture du fichier source
 	fileS, err := os.Open(wi.Config.File_immeuble)
 	if err != nil {
@@ -45,8 +48,10 @@ func (wi *WorkerImmeuble) SuperreaderCSV() error {
 
 	// Exporter les infos vers le CSV
 
+	// Création d'un nom unique pour le fichier exporté
+
 	// Ouverture du fichier export
-	fileE, err := os.Create(wi.Config.File_export + ".csv")
+	fileE, err := os.Create(wi.Config.File_export + "Export_du_" + now.Format("Mon Jan 2 15:04:05") + ".csv")
 	if err != nil {
 		return fmt.Errorf("erreur lors de l'ouverture du fichier export : %w", err)
 	}
