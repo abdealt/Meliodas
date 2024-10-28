@@ -20,7 +20,7 @@ func (wi *WorkerImmeuble) ExtractStatisticsFromCSV() {
 	// Ouverture du fichier CSV (Source)
 	csvFile, err := os.Open(FilePath)
 	if err != nil {
-		fmt.Printf("Erreur survenue lors de l'ouverture du fichier Source : %v\n", err)
+		fmt.Printf("Erreur survenue lors de l'ouverture du fichier Source : %v\n Chemin Fic : %v", err, FilePath)
 		return
 	}
 	defer csvFile.Close() // On s'assure de sa fermeture à la fin de la fonction
