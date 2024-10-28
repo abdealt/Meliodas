@@ -22,7 +22,7 @@ func LogWriter() {
 	defer logFile.Close()
 
 	// Variable qui contien le message
-	message := fmt.Sprintf("Une extraction a été effectuée le : %s | depuis le fichier source %s | vers nouveau fichier %v | les filtres actifs sont INSEE : %v et DPT :%v \n Il y a %v élements totaux dans le fichier source, sur tous ces éléments, il y'a %v éléments exportés. \n----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------", now.Format("2006-01-02 15:04:05"), components.FilePath, ExtractFilePath+CompleteExtractFileName+".csv", CityINSEE, DepartID, ComptTotal, ComptElement)
+	message := fmt.Sprintf("Une extraction a été effectuée le : %s | depuis le fichier source %s | vers nouveau fichier %v | les filtres actifs sont INSEE : %v et DPT :%v \n----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------", now.Format("2006-01-02 15:04:05"), FilePath, ExtractFilePath+CompleteExtractFileName+".csv", CityINSEE, DepartID)
 
 	// Ecriture dans le Log
 	logFile.WriteString(message)

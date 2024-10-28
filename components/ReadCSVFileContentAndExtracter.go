@@ -9,34 +9,26 @@ import (
 	"time"
 )
 
+var FilePath string
+var ExtractFilePath string
+var CompleteExtractFileName string
+var CityINSEE string
+var DepartID string
+
 // ReadCSVFileContentAndExtracter lit le fichier CSV source et extrait les données en fonction de la configuration
 func (wi *WorkerImmeuble) ReadCSVFileContentAndExtracter() {
 	// On initialise le temps qui servira plus tard pour l'horodatage du fichier exporté
 	now := time.Now()
 
 	// Récupération du chemin du fichier CSV (SOURCE) depuis la configuration
-	FilePath := wi.Config.File_immeuble
-	if FilePath == "" {
-		fmt.Printf("Aucun chemin de fichier fourni dans la configuration\n")
-		return
-	}
+	FilePath = wi.Config.File_immeuble
 
 	// Récupération des listes de codes INSEE et de départements depuis la configuration
 	InseeList := wi.Config.Lst_Insee
 	DepartList := wi.Config.Lst_Dprt
 
-	// Vérification si au moins un code INSEE ou un département est fourni
-	if len(InseeList) == 0 && len(DepartList) == 0 {
-		fmt.Printf("Aucun code INSEE (CITY_INSEE) ou Département n'est fourni dans la configuration\n")
-		return
-	}
-
 	// Récupérer le chemin d'extraction depuis la configuration
 	ExtractFilePath := wi.Config.File_export
-	if ExtractFilePath == "" {
-		fmt.Printf("Aucun chemin pour le fichier d'extraction (EXTRACT_FILE) n'est fourni dans la configuration\n")
-		return
-	}
 
 	// Ouverture du fichier CSV (Source)
 	csvFile, err := os.Open(FilePath)
@@ -83,12 +75,7 @@ func (wi *WorkerImmeuble) ReadCSVFileContentAndExtracter() {
 	header := []string{"x", "y", "imb_id", "num_voie", "cp_no_voie", "type_voie", "nom_voie", "batiment", "code_insee", "code_poste", "nom_com", "catg_loc_imb", "imb_etat", "pm_ref", "pm_etat", "code_l331", "geom_mod", "type_imb"}
 	w.Write(header)
 
-	// Boucle pour lire et traiter chaque enregistrement
-	var ComptTotal int
-	var ComptElement int
 	for {
-		// Incrémentation du compteur du total d'éléments
-		ComptTotal++
 
 		// Lire une ligne du fichier source
 		record, err := r.Read()
@@ -114,8 +101,7 @@ func (wi *WorkerImmeuble) ReadCSVFileContentAndExtracter() {
 				for _, dept := range DepartList {
 					// Si le département de l'enregistrement correspond au département à extraire
 					if codeDept == strings.TrimSpace(dept) {
-						// Incrémentation de l'élément
-						ComptElement++
+
 						// Écriture de l'enregistrement trouvé
 						w.Write(record)
 						break
@@ -132,8 +118,7 @@ func (wi *WorkerImmeuble) ReadCSVFileContentAndExtracter() {
 			for _, insee := range InseeList {
 				// Si le code INSEE de l'enregistrement correspond au code INSEE à extraire
 				if codeInsee == strings.TrimSpace(insee) {
-					// Incrémentation de l'élément
-					ComptElement++
+
 					// Écriture de l'enregistrement trouvé
 					w.Write(record)
 					break
