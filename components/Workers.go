@@ -27,27 +27,11 @@ func NewWorkerImmeuble(cfg Config) (*WorkerImmeuble, error) {
 	return workerImmeuble, nil
 }
 
+var CptEl int
+var CptTo int
+
 // SynoReaderRunner est la fonction d'execution des traitements autour du synoptique
 func (wi *WorkerImmeuble) SuperreaderCSV() error {
-
-	// Lire les parametres de config depuis wi.Config
-	if wi.Config.File_immeuble == "" {
-		return fmt.Errorf("aucun chemin de fichier source n'a été donné")
-	}
-
-	if wi.Config.File_export == "" {
-		return fmt.Errorf("aucun chemin pour le fichier d'extraction n'a été donné")
-	}
-
-	if wi.Config.File_log == "" {
-		return fmt.Errorf("aucun chemin de fichier log n'a été donné")
-
-	}
-
-	if len(wi.Config.Lst_Dprt) == 0 && len(wi.Config.Lst_Insee) == 0 {
-		return fmt.Errorf("la liste d'extraction est vide")
-	}
-
 	// Faire le traitement de lecture du fichier IMMEUBLE
 
 	// Ouverture du fichier source
@@ -113,5 +97,55 @@ func (wi *WorkerImmeuble) SuperreaderCSV() error {
 		}
 	}
 	fmt.Printf("Extraction terminée, le résultat est disponible dans le fichier : %s\n", wi.Config.File_export+".csv")
+	return nil
+}
+
+func (wi *WorkerImmeuble) ExtractStatisticsFromCSV() error {
+	// Ouverture du fichier source
+	fileS, err := os.Open(wi.Config.File_immeuble)
+	if err != nil {
+		return fmt.Errorf("erreur lors de l'ouverture du fichier source : %w", err)
+	}
+	defer fileS.Close()
+
+	// Création de l'instance de lecture et son séparateur
+	r := csv.NewReader(fileS)
+	r.Comma = ','
+
+	// Lire et écrire les lignes
+	for {
+		CptTo++
+		record, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("erreur lors de la lecture de la ligne : %w", err)
+		}
+		// Filtrer les lignes selon les codes département et INSEE
+		if len(record) >= 10 {
+			codeInsee := record[8]
+			codeDpt := strings.TrimSpace(record[9][:2])
+
+			for _, insee := range wi.Config.Lst_Insee {
+				if codeInsee == insee {
+					CptEl++
+					break
+
+				} else {
+					continue
+				}
+			}
+			for _, dept := range wi.Config.Lst_Dprt {
+				if codeDpt == dept {
+					CptEl++
+					break
+				} else {
+					continue
+				}
+			}
+		}
+	}
+	fmt.Printf("Il y'a %v éléments totaux. Il y'a %v éléments traités.", CptTo, CptEl)
 	return nil
 }
