@@ -32,8 +32,6 @@ var CptTo int
 
 // SynoReaderRunner est la fonction d'execution des traitements autour du synoptique
 func (wi *WorkerImmeuble) SuperreaderCSV() error {
-	// Faire le traitement de lecture du fichier IMMEUBLE
-
 	// Ouverture du fichier source
 	fileS, err := os.Open(wi.Config.File_immeuble)
 	if err != nil {
@@ -124,8 +122,8 @@ func (wi *WorkerImmeuble) ExtractStatisticsFromCSV() error {
 		}
 		// Filtrer les lignes selon les codes département et INSEE
 		if len(record) >= 10 {
-			codeInsee := record[8]
-			codeDpt := strings.TrimSpace(record[9][:2])
+			codeInsee := record[8]                      // Colonne du code insee
+			codeDpt := strings.TrimSpace(record[8][:2]) // Les 2 premier caractère du code insee sont le département
 
 			for _, insee := range wi.Config.Lst_Insee {
 				if codeInsee == insee {
