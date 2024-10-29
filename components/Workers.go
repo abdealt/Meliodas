@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// Config va contenir les paramètres du programme
 type Config struct {
 	File_immeuble string
 	File_export   string
@@ -17,10 +18,12 @@ type Config struct {
 	Lst_Dprt      []string
 }
 
+// Retorune un pointeur sur config
 type WorkerImmeuble struct {
 	Config *Config
 }
 
+// NewWorkerImmeuble crée un nouvel objet WorkerImmeuble avec les paramètres fournis
 func NewWorkerImmeuble(cfg Config) (*WorkerImmeuble, error) {
 	workerImmeuble := &WorkerImmeuble{
 		Config: &cfg,
@@ -28,6 +31,7 @@ func NewWorkerImmeuble(cfg Config) (*WorkerImmeuble, error) {
 	return workerImmeuble, nil
 }
 
+// Créations des variables pour compter
 var CptEl int
 var CptTo int
 
@@ -68,10 +72,13 @@ func (wi *WorkerImmeuble) SuperreaderCSV() error {
 
 	// Lire et écrire les lignes
 	for {
+		// Lire une ligne du CSV
 		record, err := r.Read()
+		// Si fin du fichier
 		if err == io.EOF {
 			break
 		}
+		// Si erreur lors de la lecture de la ligne
 		if err != nil {
 			return fmt.Errorf("erreur lors de la lecture de la ligne : %w", err)
 		}
@@ -80,7 +87,9 @@ func (wi *WorkerImmeuble) SuperreaderCSV() error {
 			codeInsee := record[8]
 			codeDpt := strings.TrimSpace(record[9][:2])
 
+			// Pour chaque element de Lst_Insee
 			for _, insee := range wi.Config.Lst_Insee {
+				// Si codeInee correspond a insee (élément courant de Lst_Insee)
 				if codeInsee == insee {
 					w.Write(record)
 					break
@@ -89,7 +98,9 @@ func (wi *WorkerImmeuble) SuperreaderCSV() error {
 					continue
 				}
 			}
+			// Pour chaque element de Lst_Dprt
 			for _, dept := range wi.Config.Lst_Dprt {
+				// Si codeDpt correspond a dept (élément courant de Lst_Dprt)
 				if codeDpt == dept {
 					w.Write(record)
 					break
