@@ -51,7 +51,7 @@ func (wi *WorkerImmeuble) SuperreaderCSV() error {
 	// Création d'un nom unique pour le fichier exporté
 
 	// Ouverture du fichier export
-	fileE, err := os.Create(wi.Config.File_export + "Export_du_" + now.Format("Mon Jan 2 15:04:05") + ".csv")
+	fileE, err := os.Create(wi.Config.File_export + "Export_du_" + now.Format("02-01-2006-15:04:05") + ".csv")
 	if err != nil {
 		return fmt.Errorf("erreur lors de l'ouverture du fichier export : %w", err)
 	}
