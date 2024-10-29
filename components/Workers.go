@@ -50,24 +50,19 @@ func (wi *WorkerImmeuble) SuperreaderCSV() error {
 	r := csv.NewReader(fileS)
 	r.Comma = ','
 
-	// Exporter les infos vers le CSV
-
-	// Création d'un nom unique pour le fichier exporté
-
 	// Ouverture du fichier export
 	fileE, err := os.Create(wi.Config.File_export + "Export_du_" + now.Format("02-01-2006_15-04-05") + ".csv")
-
 	if err != nil {
 		return fmt.Errorf("erreur lors de l'ouverture du fichier export : %w", err)
 	}
 	defer fileE.Close()
 
-	// Création de l'instance de l'ecriture et son séparateur
+	// Création de l'instance de l'écriture et son séparateur
 	w := csv.NewWriter(fileE)
 	w.Comma = ';'
 	defer w.Flush()
 
-	// Ecriture du header
+	// Écriture du header
 	header := []string{"x", "y", "imb_id", "num_voie", "cp_no_voie", "type_voie", "nom_voie", "batiment", "code_insee", "code_poste", "nom_com", "catg_loc_imb", "imb_etat", "pm_ref", "pm_etat", "code_l331", "geom_mod", "type_imb"}
 	w.Write(header)
 
@@ -75,53 +70,37 @@ func (wi *WorkerImmeuble) SuperreaderCSV() error {
 	for {
 		// Lire une ligne du CSV
 		record, err := r.Read()
-		// Si fin du fichier
 		if err == io.EOF {
 			break
 		}
-		// Si erreur lors de la lecture de la ligne
 		if err != nil {
 			return fmt.Errorf("erreur lors de la lecture de la ligne : %w", err)
 		}
+
 		// Filtrer les lignes selon les codes département et INSEE
 		if len(record) >= 10 && len(record[9]) >= 2 {
 			codeInsee := record[8]
 			codeDpt := strings.TrimSpace(record[9][:2])
 
-			// Si codeInsee est de longueur 5
-			if len(codeInsee) == 5 {
-				codeInsee = fmt.Sprintf("%05s", codeInsee)
-			}
-			if len(codeDpt) == 5 {
-				codeDpt = fmt.Sprintf("%05s", codeDpt)
-			}
-
-			// Pour chaque element de Lst_Insee
+			// Vérifier les éléments dans Lst_Insee
 			for _, insee := range wi.Config.Lst_Insee {
-				// Si codeInee correspond a insee (élément courant de Lst_Insee)
 				if codeInsee == insee {
 					w.Write(record)
 					break
-
-				} else {
-					continue
 				}
 			}
-			// Pour chaque element de Lst_Dprt
+
+			// Vérifier les éléments dans Lst_Dprt
 			for _, dept := range wi.Config.Lst_Dprt {
-				// Si codeDpt correspond a dept (élément courant de Lst_Dprt)
 				if codeDpt == dept {
 					w.Write(record)
 					break
-				} else {
-					continue
 				}
 			}
-		} else {
-			continue
 		}
 	}
-	fmt.Printf("Extraction terminée, le résultat est disponible dans le fichier : %s\n", wi.Config.File_export+".csv")
+
+	fmt.Printf("Extraction terminée, le résultat est disponible ici : %s\n", wi.Config.File_export+"Export_du_"+now.Format("02-01-2006_15-04-05")+".csv")
 	return nil
 }
 
@@ -139,7 +118,7 @@ func (wi *WorkerImmeuble) ExtractStatisticsFromCSV() error {
 
 	// Lire et écrire les lignes
 	for {
-		CptTo++
+		// Lire une ligne du CSV
 		record, err := r.Read()
 		if err == io.EOF {
 			break
@@ -147,31 +126,34 @@ func (wi *WorkerImmeuble) ExtractStatisticsFromCSV() error {
 		if err != nil {
 			return fmt.Errorf("erreur lors de la lecture de la ligne : %w", err)
 		}
-		// Filtrer les lignes selon les codes département et INSEE
-		if len(record) >= 10 && len(record[9][:2]) >= 2 {
-			codeInsee := record[8]                      // Colonne du code insee
-			codeDpt := strings.TrimSpace(record[9][:2]) // Les 2 premier caractère de la colonne 9 (Code postale) sont le département
+		// Compteur d'élèments totaux
+		CptTo++
 
+		// Filtrer les lignes selon les codes département et INSEE
+		if len(record) >= 10 && len(record[9]) >= 2 {
+			codeInsee := record[8]
+			codeDpt := strings.TrimSpace(record[9][:2])
+
+			// Vérifier les éléments dans Lst_Insee
 			for _, insee := range wi.Config.Lst_Insee {
 				if codeInsee == insee {
 					CptEl++
 					break
-
-				} else {
-					continue
 				}
 			}
+
+			// Vérifier les éléments dans Lst_Dprt
 			for _, dept := range wi.Config.Lst_Dprt {
 				if codeDpt == dept {
 					CptEl++
 					break
-				} else {
-					continue
 				}
 			}
 		}
 	}
-	fmt.Printf("Il y'a %v éléments totaux. Il y'a %v éléments traités.", CptTo, CptEl)
+	str := "%"
+	prc := CptEl * 100 / CptTo
+	fmt.Printf("Il ya au total %v elements, dont %v traité. Soit un pourcentage de %v%s.", CptTo, CptEl, prc, str)
 	return nil
 }
 
@@ -191,5 +173,60 @@ func (wi *WorkerImmeuble) LogWriteInfo() error {
 	// Ecriture du message dans le log
 	file.WriteString(message)
 
+	return nil
+}
+
+func (wi *WorkerImmeuble) ExtractDepartFromCSV() error {
+	// Ouverture du fichier source
+	fileS, err := os.Open(wi.Config.File_immeuble)
+	if err != nil {
+		return fmt.Errorf("erreur lors de l'ouverture du fichier source : %w", err)
+	}
+	defer fileS.Close()
+
+	// Initialisation du lecteur
+	r := csv.NewReader(fileS)
+	r.Comma = ','
+
+	// Utilisation d'une map pour éviter les doublons clé chaine de caractère et valeurs structure vide
+	listeDepartements := make(map[string]struct{})
+
+	// Lecture de chaque ligne du fichier
+	for {
+		// Lecture d'une ligne
+		record, err := r.Read()
+
+		// Si fin du fichier
+		if err == io.EOF {
+			break
+		}
+
+		// Si erreur lors de la lectuer d'une ligne
+		if err != nil {
+			fmt.Printf("Erreur lors de la lecture de la ligne : %v\n", err)
+			continue
+		}
+
+		// Initialisation de la colonne département
+		if len(record) >= 18 {
+			if len(record[9]) >= 2 {
+				codeDept := strings.TrimSpace(record[9][:2])
+				// Ajout dans le map
+				listeDepartements[codeDept] = struct{}{}
+			} else {
+				// Gérer le cas où la chaîne est trop courte
+				continue
+			}
+
+		} else {
+			continue
+		}
+	}
+
+	// Affichage des départements
+	fmt.Printf("Liste des départements :\n")
+	for dpt := range listeDepartements {
+		fmt.Print(dpt + "|")
+	}
 	return nil
 }
