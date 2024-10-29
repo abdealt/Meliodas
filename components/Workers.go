@@ -88,6 +88,14 @@ func (wi *WorkerImmeuble) SuperreaderCSV() error {
 			codeInsee := record[8]
 			codeDpt := strings.TrimSpace(record[9][:2])
 
+			// Si codeInsee est de longueur 5
+			if len(codeInsee) == 5 {
+				codeInsee = fmt.Sprintf("%05s", codeInsee)
+			}
+			if len(codeDpt) == 5 {
+				codeDpt = fmt.Sprintf("%05s", codeDpt)
+			}
+
 			// Pour chaque element de Lst_Insee
 			for _, insee := range wi.Config.Lst_Insee {
 				// Si codeInee correspond a insee (élément courant de Lst_Insee)
