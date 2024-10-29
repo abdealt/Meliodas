@@ -138,9 +138,9 @@ func (wi *WorkerImmeuble) ExtractStatisticsFromCSV() error {
 			return fmt.Errorf("erreur lors de la lecture de la ligne : %w", err)
 		}
 		// Filtrer les lignes selon les codes département et INSEE
-		if len(record) >= 10 {
+		if len(record) >= 10 && len(record[9][:2]) >= 2 {
 			codeInsee := record[8]                      // Colonne du code insee
-			codeDpt := strings.TrimSpace(record[8][:2]) // Les 2 premier caractère du code insee sont le département
+			codeDpt := strings.TrimSpace(record[9][:2]) // Les 2 premier caractère de la colonne 9 (Code postale) sont le département
 
 			for _, insee := range wi.Config.Lst_Insee {
 				if codeInsee == insee {
@@ -178,6 +178,7 @@ func (wi *WorkerImmeuble) LogWriteInfo() error {
 	message := fmt.Sprintf("Une extraction a été effectuée le : %s | depuis le fichier source %s | vers nouveau fichier %v.\n", now.Format("2006-01-02 15:04:05"), wi.Config.File_immeuble, wi.Config.File_export+"Export_du_"+now.Format("Mon Jan 2 15:04:05")+".csv")
 	message += fmt.Sprintf("Les filtres actifs sont INSEE : %v et DPT :%v. Il un total de %v éléments, et %v qui sont extraits.", wi.Config.Lst_Insee, wi.Config.Lst_Dprt, CptTo, CptEl)
 
+	// Ecriture du message dans le log
 	file.WriteString(message)
 
 	return nil
