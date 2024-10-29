@@ -84,7 +84,7 @@ func (wi *WorkerImmeuble) SuperreaderCSV() error {
 			return fmt.Errorf("erreur lors de la lecture de la ligne : %w", err)
 		}
 		// Filtrer les lignes selon les codes département et INSEE
-		if len(record) >= 10 && len(record[9][:2]) >= 2 {
+		if len(record) >= 10 && len(record[9]) >= 2 {
 			codeInsee := record[8]
 			codeDpt := strings.TrimSpace(record[9][:2])
 
@@ -117,6 +117,8 @@ func (wi *WorkerImmeuble) SuperreaderCSV() error {
 					continue
 				}
 			}
+		} else {
+			continue
 		}
 	}
 	fmt.Printf("Extraction terminée, le résultat est disponible dans le fichier : %s\n", wi.Config.File_export+".csv")
