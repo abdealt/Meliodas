@@ -34,17 +34,21 @@ func NewWorkerImmeuble(cfg Config) (*WorkerImmeuble, error) {
 var ComptElement int
 var ComptTotal int
 
-// SynoReaderRunner est la fonction d'execution des traitements autour du synoptique
+// SuperreaderCSV est la fonction d'exécution des traitements autour du synoptique
 func (wi *WorkerImmeuble) SuperreaderCSV() error {
 	now := time.Now()
 
-	// Ouverture du fichier log avec les permission d'ecriture
+	// Ouverture ou création du fichier log
 	logFile, err := os.OpenFile(wi.Config.File_log, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return fmt.Errorf("erreur lors de l'ouverture du fichier log : %v", err)
 	}
 	defer logFile.Close()
-	logFile.WriteString("---Debut---\nLe fichier log a été ouvert\n")
+
+	// Écriture dans le fichier log
+	if _, err := logFile.WriteString(fmt.Sprintf("---Debut---\nLe fichier log a été ouvert : %v\n", wi.Config.File_log)); err != nil {
+		return fmt.Errorf("erreur lors de l'écriture dans le fichier log : %v", err)
+	}
 
 	// Ouverture du fichier source
 	sourceFile, err := os.Open(wi.Config.File_immeuble)
@@ -52,22 +56,34 @@ func (wi *WorkerImmeuble) SuperreaderCSV() error {
 		return fmt.Errorf("erreur lors de l'ouverture du fichier source : %v", err)
 	}
 	defer sourceFile.Close()
-	logFile.WriteString(fmt.Sprintf("Le fichier source a été ouvert : %v\n", wi.Config.File_immeuble))
+
+	// Écriture dans le fichier log concernant le fichier source
+	if _, err := logFile.WriteString(fmt.Sprintf("Le fichier source a été ouvert : %v\n", wi.Config.File_immeuble)); err != nil {
+		return fmt.Errorf("erreur lors de l'écriture dans le fichier log : %v", err)
+	}
 
 	// Création de l'instance de lecture et son séparateur
 	readerInstance := csv.NewReader(sourceFile)
 	readerInstance.Comma = ','
 
-	// Variable pour composer le nom du fichier on passe d'un tableau ("21","32""91") à une chaine "21_32_91""
+	// Variable pour composer le nom du fichier d'export
 	dptStringFileName := strings.Join(wi.Config.Lst_Dprt, "_")
 
-	// Ouverture du fichier export
-	ExportedFile, err := os.Create(wi.Config.File_export + "Export_du_" + now.Format("02-01-2006_15-04-05") + "_Export_Par_Dpt_" + dptStringFileName + ".csv")
+	// Ouverture du fichier d'export
+	exportedFileName := fmt.Sprintf("%sExport_du_%s_Export_Par_Dpt_%s.csv",
+		wi.Config.File_export,
+		now.Format("02-01-2006_15-04-05"),
+		dptStringFileName)
+	ExportedFile, err := os.Create(exportedFileName)
 	if err != nil {
-		return fmt.Errorf("erreur lors de l'ouverture du fichier export : %v", err)
+		return fmt.Errorf("erreur lors de l'ouverture du fichier d'export : %v", err)
 	}
 	defer ExportedFile.Close()
-	logFile.WriteString(fmt.Sprintf("Le fichier d'export a été ouvert : %v\n", wi.Config.File_export+"Export_du_"+now.Format("02-01-2006_15-04-05")+"_Export_Par_Dpt_"+dptStringFileName+".csv"))
+
+	// Écriture dans le fichier log concernant le fichier d'export
+	if _, err := logFile.WriteString(fmt.Sprintf("Le fichier d'export a été ouvert : %v\n", exportedFileName)); err != nil {
+		return fmt.Errorf("erreur lors de l'écriture dans le fichier log : %v", err)
+	}
 
 	// Création de l'instance de l'écriture et son séparateur
 	writerInstance := csv.NewWriter(ExportedFile)
@@ -76,10 +92,14 @@ func (wi *WorkerImmeuble) SuperreaderCSV() error {
 
 	// Écriture du header
 	header := []string{"x", "y", "imb_id", "num_voie", "cp_no_voie", "type_voie", "nom_voie", "batiment", "code_insee", "code_poste", "nom_com", "type_imb"}
-	writerInstance.Write(header)
+	if err := writerInstance.Write(header); err != nil {
+		return fmt.Errorf("erreur lors de l'écriture du header : %v", err)
+	}
 
-	logFile.WriteString("Début de la lecture des enregistrements\n")
-	// Lire et écrire les lignes
+	if _, err := logFile.WriteString("Début de la lecture des enregistrements\n"); err != nil {
+		return fmt.Errorf("erreur lors de l'écriture dans le fichier log : %v", err)
+	}
+
 	// Lire et écrire les lignes
 	for {
 		// Lire une ligne du CSV
@@ -105,20 +125,29 @@ func (wi *WorkerImmeuble) SuperreaderCSV() error {
 					if len(record) >= 6 {
 						// Crée un tableau contenant les 11 premières colonnes et la dernière
 						selectedColumns := append(record[:11], record[len(record)-1])
-						writerInstance.Write(selectedColumns)
+						if err := writerInstance.Write(selectedColumns); err != nil {
+							return fmt.Errorf("erreur lors de l'écriture des données : %v", err)
+						}
 					} else {
 						// Gérer le cas où la ligne ne contient pas assez de colonnes
-						writerInstance.Write(record)
+						if err := writerInstance.Write(record); err != nil {
+							return fmt.Errorf("erreur lors de l'écriture des données : %v", err)
+						}
 					}
 					break
 				}
 			}
 		}
 	}
-	lap := time.Since(now)
-	logFile.WriteString(fmt.Sprintf("Extraction finie | Nombre total d'enregistrement trouvés : %v | Nombre d'enregistrements Exporté : %v\n---FIN---\n\n", ComptTotal, ComptElement))
 
-	fmt.Printf("Extraction terminée, le résultat est disponible ici (vous pouvez copier coller)\n: %s\nTemps de l'opération : %v\n", wi.Config.File_export+"Export_du_"+now.Format("02-01-2006_15-04-05")+"_Export_Par_Dpt_"+dptStringFileName+".csv", lap)
+	// Log de fin d'extraction
+	lap := time.Since(now)
+	if _, err := logFile.WriteString(fmt.Sprintf("Extraction finie | Nombre total d'enregistrements trouvés : %v | Nombre d'enregistrements exportés : %v\n---FIN---\n\n", ComptTotal, ComptElement)); err != nil {
+		return fmt.Errorf("erreur lors de l'écriture dans le fichier log : %v", err)
+	}
+
+	// Affichage de l'information de fin
+	fmt.Printf("Extraction terminée, le résultat est disponible ici (vous pouvez copier-coller)\n: %s\nTemps de l'opération : %v\n", exportedFileName, lap)
 	return nil
 }
 
