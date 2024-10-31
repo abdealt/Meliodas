@@ -44,7 +44,7 @@ func (wi *WorkerImmeuble) SuperreaderCSV() error {
 		return fmt.Errorf("erreur lors de l'ouverture du fichier log : %v", err)
 	}
 	defer logFile.Close()
-	logFile.WriteString("Le fichier log a été ouvert\n")
+	logFile.WriteString("---Debut---\nLe fichier log a été ouvert\n")
 
 	// Ouverture du fichier source
 	sourceFile, err := os.Open(wi.Config.File_immeuble)
@@ -58,13 +58,16 @@ func (wi *WorkerImmeuble) SuperreaderCSV() error {
 	readerInstance := csv.NewReader(sourceFile)
 	readerInstance.Comma = ','
 
+	// Variable pour composer le nom du fichier on passe d'un tableau ("21","32""91") à une chaine "21_32_91""
+	dptStringFileName := strings.Join(wi.Config.Lst_Dprt, "_")
+
 	// Ouverture du fichier export
-	ExportedFile, err := os.Create(wi.Config.File_export + "Export_du_" + now.Format("02-01-2006_15-04-05") + ".csv")
+	ExportedFile, err := os.Create(wi.Config.File_export + "Export_du_" + now.Format("02-01-2006_15-04-05") + "_Export_Par_Dpt_" + dptStringFileName + ".csv")
 	if err != nil {
 		return fmt.Errorf("erreur lors de l'ouverture du fichier export : %v", err)
 	}
 	defer ExportedFile.Close()
-	logFile.WriteString(fmt.Sprintf("Le fichier d'export a été ouvert : %v\n", wi.Config.File_export))
+	logFile.WriteString(fmt.Sprintf("Le fichier d'export a été ouvert : %v\n", wi.Config.File_export+"Export_du_"+now.Format("02-01-2006_15-04-05")+"_Export_Par_Dpt_"+dptStringFileName+".csv"))
 
 	// Création de l'instance de l'écriture et son séparateur
 	writerInstance := csv.NewWriter(ExportedFile)
@@ -115,7 +118,7 @@ func (wi *WorkerImmeuble) SuperreaderCSV() error {
 	lap := time.Since(now)
 	logFile.WriteString(fmt.Sprintf("Extraction finie | Nombre total d'enregistrement trouvés : %v | Nombre d'enregistrements Exporté : %v\n---FIN---\n\n", ComptTotal, ComptElement))
 
-	fmt.Printf("Extraction terminée, le résultat est disponible ici (vous pouvez copier coller)\n: %s\nTemps de l'opération : %v\n", wi.Config.File_export+"Export_du_"+now.Format("02-01-2006_15-04-05")+".csv", lap)
+	fmt.Printf("Extraction terminée, le résultat est disponible ici (vous pouvez copier coller)\n: %s\nTemps de l'opération : %v\n", wi.Config.File_export+"Export_du_"+now.Format("02-01-2006_15-04-05")+"_Export_Par_Dpt_"+dptStringFileName+".csv", lap)
 	return nil
 }
 
